@@ -2,13 +2,33 @@ FROM python:3.11-slim
 
 RUN pip install --no-cache-dir phenospy==0.271
 
+# Install Apache Jena (shacl + riot), ROBOT, and Materializer
+RUN apt-get update && apt-get install -y --no-install-recommends curl default-jre-headless \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -fsSL https://archive.apache.org/dist/jena/binaries/apache-jena-5.2.0.tar.gz \
+       | tar -xz -C /opt \
+    && ln -s /opt/apache-jena-5.2.0/bin/shacl /usr/local/bin/shacl \
+    && ln -s /opt/apache-jena-5.2.0/bin/riot /usr/local/bin/riot \
+    && ln -s /opt/apache-jena-5.2.0/bin/update /usr/local/bin/update \
+    && curl -fsSL https://github.com/ontodev/robot/releases/download/v1.9.5/robot.jar \
+       -o /usr/local/bin/robot.jar \
+    && printf '#!/bin/sh\nexec java -jar /usr/local/bin/robot.jar "$@"\n' \
+       > /usr/local/bin/robot \
+    && chmod +x /usr/local/bin/robot \
+    && curl -fsSL https://github.com/balhoff/materializer/releases/download/v0.2.7/materializer-0.2.7.tgz \
+       | tar -xz -C /opt \
+    && ln -s /opt/materializer-0.2.7/bin/materializer /usr/local/bin/materializer
+
 WORKDIR /app
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 # Expected volume mounts at runtime:
-#   /app/input    — project phenotypes/ dir (contains .phs/.yphs + phs-config.yaml)
-#   /app/snippets — extension snippets/ dir (provides phs-snippets.json)
-#   /app/output   — output/owl_init/ dir (receives .owl and .xml)
+#   /app/input     — project phenotypes/ dir (contains .phs/.yphs + phs-config.yaml)
+#   /app/snippets  — extension snippets/ dir (provides phs-snippets.json)
+#   /app/output    — output/owl_init/ dir (receives .owl and .xml)
+#   /app/nl_output — output/nl/ dir (receives .html / .md)
+#   /app/utils     — project utils/ dir (contains phenoscript.shacl.ttl)
+#   /app/log       — output/log/ dir (receives .shacl.txt validation logs)
 
 ENTRYPOINT ["/app/entrypoint.sh"]
