@@ -1,15 +1,18 @@
 FROM python:3.11-slim
 
-RUN pip install --no-cache-dir phenospy==0.272
+RUN pip install --no-cache-dir phenospy==0.273
 
 # Install Apache Jena (shacl + riot), ROBOT, and Materializer
 RUN apt-get update && apt-get install -y --no-install-recommends curl default-jre-headless \
     && rm -rf /var/lib/apt/lists/* \
     && curl -fsSL https://archive.apache.org/dist/jena/binaries/apache-jena-5.2.0.tar.gz \
        | tar -xz -C /opt \
+    && curl -fsSL https://archive.apache.org/dist/jena/binaries/apache-jena-fuseki-5.2.0.tar.gz \
+       | tar -xz -C /opt \
     && ln -s /opt/apache-jena-5.2.0/bin/shacl /usr/local/bin/shacl \
     && ln -s /opt/apache-jena-5.2.0/bin/riot /usr/local/bin/riot \
     && ln -s /opt/apache-jena-5.2.0/bin/update /usr/local/bin/update \
+    && ln -s /opt/apache-jena-fuseki-5.2.0/fuseki-server /usr/local/bin/fuseki-server \
     && curl -fsSL https://github.com/ontodev/robot/releases/download/v1.9.5/robot.jar \
        -o /usr/local/bin/robot.jar \
     && printf '#!/bin/sh\nexec java -jar /usr/local/bin/robot.jar "$@"\n' \
