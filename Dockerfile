@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-RUN pip install --no-cache-dir phenospy==0.273
+RUN pip install --no-cache-dir phenospy==0.274
 
 # Install Apache Jena (shacl + riot), ROBOT, and Materializer
 RUN apt-get update && apt-get install -y --no-install-recommends curl default-jre-headless \
